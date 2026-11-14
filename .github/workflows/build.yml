@@ -1,0 +1,77 @@
+name: Build TelephoneBeep
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone JUCE
+        run: git clone --depth 1 https://github.com/juce-framework/JUCE.git
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Upload VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: TelephoneBeep-Windows-VST3
+          path: build/TelephoneBeep_artefacts/Release/VST3/
+      - name: Upload Standalone
+        uses: actions/upload-artifact@v4
+        with:
+          name: TelephoneBeep-Windows-Standalone
+          path: build/TelephoneBeep_artefacts/Release/Standalone/
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone JUCE
+        run: git clone --depth 1 https://github.com/juce-framework/JUCE.git
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Upload VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: TelephoneBeep-macOS-VST3
+          path: build/TelephoneBeep_artefacts/Release/VST3/
+      - name: Upload AU
+        uses: actions/upload-artifact@v4
+        with:
+          name: TelephoneBeep-macOS-AU
+          path: build/TelephoneBeep_artefacts/Release/AU/
+      - name: Upload Standalone
+        uses: actions/upload-artifact@v4
+        with:
+          name: TelephoneBeep-macOS-Standalone
+          path: build/TelephoneBeep_artefacts/Release/Standalone/
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libfreetype6-dev libx11-dev libxinerama-dev libxrandr-dev libxcursor-dev libxcomposite-dev libxext-dev
+      - name: Clone JUCE
+        run: git clone --depth 1 https://github.com/juce-framework/JUCE.git
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Upload VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: TelephoneBeep-Linux-VST3
+          path: build/TelephoneBeep_artefacts/Release/VST3/
+      - name: Upload Standalone
+        uses: actions/upload-artifact@v4
+        with:
+          name: TelephoneBeep-Linux-Standalone
+          path: build/TelephoneBeep_artefacts/Release/Standalone/
