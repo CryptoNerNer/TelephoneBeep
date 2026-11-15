@@ -25,7 +25,7 @@ TelephoneBeepAudioProcessorEditor::TelephoneBeepAudioProcessorEditor(TelephoneBe
         addAndMakeVisible(s);
         l.setText(name, juce::dontSendNotification);
         l.setColour(juce::Label::textColourId, juce::Colours::white);
-        l.setFont(juce::Font(15.0f));
+        l.setFont(juce::FontOptions(15.0f));
         addAndMakeVisible(l);
     };
 
@@ -46,9 +46,9 @@ void TelephoneBeepAudioProcessorEditor::paint(juce::Graphics& g)
 {
     g.fillAll(juce::Colour(0xff141414));
     g.setColour(juce::Colour(0xff00cc66));
-    g.setFont(juce::Font(26.0f, juce::Font::bold));
+    g.setFont(juce::FontOptions(26.0f, juce::Font::bold));
     g.drawText("TELEPHONE BEEP", 0, 12, getWidth(), 32, juce::Justification::centred);
-    g.setFont(14.0f);
+    g.setFont(juce::FontOptions(14.0f));
     g.setColour(juce::Colours::lightgrey);
     g.drawText("Classic DTMF keypad tones  +  reverb", 0, 42, getWidth(), 20, juce::Justification::centred);
 }

@@ -42,9 +42,9 @@ void TelephoneBeepAudioProcessor::startTone(int key)
 
     int row, col;
     if (key <= 8) { row = key / 3; col = key % 3; }
-    else if (key == 9)  { row = 3; col = 0; } // *
-    else if (key == 10) { row = 3; col = 1; } // 0
-    else                { row = 3; col = 2; } // #
+    else if (key == 9)  { row = 3; col = 0; }
+    else if (key == 10) { row = 3; col = 1; }
+    else                { row = 3; col = 2; }
 
     freq1 = lowFreqs[row];
     freq2 = highFreqs[col];
@@ -84,7 +84,7 @@ void TelephoneBeepAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
             for (int i = 0; i < samplesToDo; ++i) {
                 const float s1 = static_cast<float>(std::sin(p1));
                 const float s2 = static_cast<float>(std::sin(p2));
-                const float env = (i < 10) ? (i / 10.0f) : 1.0f;
+                const float env = (i < 10) ? (static_cast<float>(i) / 10.0f) : 1.0f;
                 data[i] = (s1 + s2) * 0.5f * toneAmplitude * env;
                 p1 += twoPi * freq1 / sr;
                 p2 += twoPi * freq2 / sr;

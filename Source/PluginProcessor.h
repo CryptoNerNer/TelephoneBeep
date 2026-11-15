@@ -31,14 +31,14 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    void triggerTone(int keyIndex); // 0=1 ... 8=9, 9=*, 10=0, 11=#
+    void triggerTone(int keyIndex);
 
     juce::AudioProcessorValueTreeState parameters;
     std::atomic<int> currentKey{-1};
 
 private:
-    juce::Reverb reverb;
-    juce::Reverb::Parameters reverbParams;
+    juce::dsp::Reverb reverb;
+    juce::dsp::Reverb::Parameters reverbParams;
 
     double currentSampleRate = 44100.0;
     int samplesRemaining = 0;
