@@ -3,11 +3,11 @@
 static const char* keyLabels[12] = { "1","2","3","4","5","6","7","8","9","*","0","#" };
 
 TelephoneBeepAudioProcessorEditor::TelephoneBeepAudioProcessorEditor(TelephoneBeepAudioProcessor& p)
-    : AudioProcessorEditor(&p), audioProcessor(p)
+    : AudioProcessorEditor(&p), audioProcessor(p), piano(p)
 {
-    setSize(720, 640);
+    setSize(820, 720);
     setResizable(true, true);
-    setResizeLimits(600, 500, 1200, 900);
+    setResizeLimits(700, 580, 1400, 1000);
 
     modeBox.addItemList({"DTMF PHONE", "MOOG SYNTH", "VINTAGE DRUMS", "SLAP BASS"}, 1);
     addAndMakeVisible(modeBox);
@@ -15,13 +15,13 @@ TelephoneBeepAudioProcessorEditor::TelephoneBeepAudioProcessorEditor(TelephoneBe
 
     modeLabel.setText("ENGINE", juce::dontSendNotification);
     modeLabel.setColour(juce::Label::textColourId, juce::Colour(0xffff2222));
-    modeLabel.setFont(juce::FontOptions(16.0f, juce::Font::bold));
+    modeLabel.setFont(juce::FontOptions(15.0f, juce::Font::bold));
     addAndMakeVisible(modeLabel);
 
     for (int i = 0; i < 12; ++i) {
         keyButtons[i].setButtonText(keyLabels[i]);
-        keyButtons[i].setColour(juce::TextButton::buttonColourId, juce::Colour(0xff1a1a1a));
-        keyButtons[i].setColour(juce::TextButton::buttonOnColourId, juce::Colour(0xffff3333));
+        keyButtons[i].setColour(juce::TextButton::buttonColourId, juce::Colour(0xff1a0a0a));
+        keyButtons[i].setColour(juce::TextButton::buttonOnColourId, juce::Colour(0xffff2222));
         keyButtons[i].setColour(juce::TextButton::textColourOffId, juce::Colours::white);
         keyButtons[i].onClick = [this, i]() { audioProcessor.triggerTone(i); };
         addAndMakeVisible(keyButtons[i]);
@@ -39,28 +39,20 @@ TelephoneBeepAudioProcessorEditor::TelephoneBeepAudioProcessorEditor(TelephoneBe
     hatBtn.onClick = [this]() { audioProcessor.triggerDrum(2); };
     slapBtn.onClick = [this]() { audioProcessor.triggerSlap(1.0f); };
 
-    auto makeSlider = [&](juce::Slider& s, const juce::String& id) {
+    auto makeSlider = [&](juce::Slider& s) {
         s.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        s.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+        s.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 55, 16);
         s.setColour(juce::Slider::rotarySliderFillColourId, juce::Colour(0xffff3333));
         s.setColour(juce::Slider::thumbColourId, juce::Colour(0xffff0000));
         addAndMakeVisible(s);
     };
 
-    makeSlider(reverbMixSlider, "reverbMix");
-    makeSlider(reverbSizeSlider, "reverbSize");
-    makeSlider(moogCutoffSlider, "moogCutoff");
-    makeSlider(moogResoSlider, "moogReso");
-    makeSlider(moogAttackSlider, "moogAttack");
-    makeSlider(moogDecaySlider, "moogDecay");
-    makeSlider(moogSustainSlider, "moogSustain");
-    makeSlider(moogReleaseSlider, "moogRelease");
-    makeSlider(kickTuneSlider, "kickTune");
-    makeSlider(kickDecaySlider, "kickDecay");
-    makeSlider(snareSnapSlider, "snareSnap");
-    makeSlider(slapToneSlider, "slapTone");
-    makeSlider(slapThumpSlider, "slapThump");
-    makeSlider(slapDecaySlider, "slapDecay");
+    makeSlider(reverbMixSlider); makeSlider(reverbSizeSlider);
+    makeSlider(moogCutoffSlider); makeSlider(moogResoSlider);
+    makeSlider(moogAttackSlider); makeSlider(moogDecaySlider);
+    makeSlider(moogSustainSlider); makeSlider(moogReleaseSlider);
+    makeSlider(kickTuneSlider); makeSlider(kickDecaySlider); makeSlider(snareSnapSlider);
+    makeSlider(slapToneSlider); makeSlider(slapThumpSlider); makeSlider(slapDecaySlider);
 
     mixA = std::make_unique<Attachment>(audioProcessor.parameters, "reverbMix", reverbMixSlider);
     sizeA = std::make_unique<Attachment>(audioProcessor.parameters, "reverbSize", reverbSizeSlider);
@@ -77,6 +69,8 @@ TelephoneBeepAudioProcessorEditor::TelephoneBeepAudioProcessorEditor(TelephoneBe
     slThumpA = std::make_unique<Attachment>(audioProcessor.parameters, "slapThump", slapThumpSlider);
     slDecA = std::make_unique<Attachment>(audioProcessor.parameters, "slapDecay", slapDecaySlider);
 
+    addAndMakeVisible(piano);
+
     startTimerHz(20);
     updateVisibility();
 }
@@ -85,72 +79,74 @@ TelephoneBeepAudioProcessorEditor::~TelephoneBeepAudioProcessorEditor() {}
 
 void TelephoneBeepAudioProcessorEditor::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colour(0xff0a0a0a));
+    g.fillAll(juce::Colour(0xff0c0c0c));
 
-    // Blood drip style header
-    g.setColour(juce::Colour(0xffaa0000));
-    g.fillRect(0, 0, getWidth(), 70);
-    g.setColour(juce::Colours::black);
-    g.fillRect(0, 65, getWidth(), 5);
+    // Header bar style The Culling
+    g.setColour(juce::Colour(0xff1a0000));
+    g.fillRect(0, 0, getWidth(), 78);
+    g.setColour(juce::Colour(0xffff0000));
+    g.fillRect(0, 74, getWidth(), 4);
 
     g.setColour(juce::Colours::white);
-    g.setFont(juce::FontOptions(32.0f, juce::Font::bold));
-    g.drawText("THE CULLING", 20, 10, getWidth() - 40, 40, juce::Justification::centredLeft);
+    g.setFont(juce::FontOptions(34.0f, juce::Font::bold));
+    g.drawText("THE CULLING", 18, 8, 400, 38, juce::Justification::centredLeft);
 
     g.setColour(juce::Colour(0xffff3333));
-    g.setFont(juce::FontOptions(14.0f, juce::Font::bold));
-    g.drawText("AUDIO WEAPON  //  DTMF  •  MOOG  •  DRUMS  •  SLAP", 20, 42, getWidth() - 40, 20, juce::Justification::centredLeft);
+    g.setFont(juce::FontOptions(13.0f, juce::Font::bold));
+    g.drawText("AUDIO WEAPON  •  DTMF  •  MOOG  •  DRUMS  •  SLAP BASS", 18, 44, 500, 18, juce::Justification::centredLeft);
+
+    // Small logo accent
+    g.setColour(juce::Colour(0xffff0000));
+    g.setFont(juce::FontOptions(20.0f, juce::Font::bold));
+    g.drawText("CULL", getWidth() - 120, 18, 100, 40, juce::Justification::centredRight);
 }
 
 void TelephoneBeepAudioProcessorEditor::resized()
 {
-    auto area = getLocalBounds().reduced(16);
-    area.removeFromTop(80);
+    auto area = getLocalBounds().reduced(14);
+    area.removeFromTop(85);
 
-    modeLabel.setBounds(area.removeFromTop(20).removeFromLeft(80));
-    modeBox.setBounds(area.removeFromTop(30).removeFromLeft(200));
-    area.removeFromTop(10);
+    auto topRow = area.removeFromTop(28);
+    modeLabel.setBounds(topRow.removeFromLeft(70));
+    modeBox.setBounds(topRow.removeFromLeft(180));
+    area.removeFromTop(8);
 
-    auto top = area.removeFromTop(280);
-    // Keypad left
-    auto keys = top.removeFromLeft(280);
-    int btnW = 70, btnH = 50, gap = 6;
+    auto middle = area.removeFromTop(260);
+    auto keysArea = middle.removeFromLeft(260);
+    int btnW = 68, btnH = 48, gap = 5;
     for (int i = 0; i < 12; ++i) {
         int row = i / 3, col = i % 3;
-        keyButtons[i].setBounds(keys.getX() + col * (btnW + gap), keys.getY() + row * (btnH + gap), btnW, btnH);
+        keyButtons[i].setBounds(keysArea.getX() + col * (btnW + gap), keysArea.getY() + row * (btnH + gap), btnW, btnH);
     }
 
-    // Drum / slap buttons
-    auto buttons = top.removeFromLeft(200);
-    kickBtn.setBounds(buttons.removeFromTop(50).reduced(4));
-    snareBtn.setBounds(buttons.removeFromTop(50).reduced(4));
-    hatBtn.setBounds(buttons.removeFromTop(50).reduced(4));
-    slapBtn.setBounds(buttons.removeFromTop(50).reduced(4));
+    auto btnArea = middle.removeFromLeft(140);
+    kickBtn.setBounds(btnArea.removeFromTop(48).reduced(3));
+    snareBtn.setBounds(btnArea.removeFromTop(48).reduced(3));
+    hatBtn.setBounds(btnArea.removeFromTop(48).reduced(3));
+    slapBtn.setBounds(btnArea.removeFromTop(48).reduced(3));
 
-    // Controls
-    auto controls = area;
-    int knobW = 80;
-    int x = controls.getX();
-    int y = controls.getY();
+    // Knobs
+    auto knobs = area.removeFromTop(120);
+    int kw = 70, x = knobs.getX(), y = knobs.getY();
+    reverbMixSlider.setBounds(x, y, kw, 100); x += kw + 6;
+    reverbSizeSlider.setBounds(x, y, kw, 100); x += kw + 16;
+    moogCutoffSlider.setBounds(x, y, kw, 100); x += kw + 6;
+    moogResoSlider.setBounds(x, y, kw, 100); x += kw + 6;
+    moogAttackSlider.setBounds(x, y, kw, 100); x += kw + 6;
+    moogDecaySlider.setBounds(x, y, kw, 100); x += kw + 6;
+    moogSustainSlider.setBounds(x, y, kw, 100); x += kw + 6;
+    moogReleaseSlider.setBounds(x, y, kw, 100);
 
-    reverbMixSlider.setBounds(x, y, knobW, 90); x += knobW + 10;
-    reverbSizeSlider.setBounds(x, y, knobW, 90); x += knobW + 20;
+    y += 110; x = knobs.getX() + 160;
+    kickTuneSlider.setBounds(x, y, kw, 100); x += kw + 6;
+    kickDecaySlider.setBounds(x, y, kw, 100); x += kw + 6;
+    snareSnapSlider.setBounds(x, y, kw, 100); x += kw + 16;
+    slapToneSlider.setBounds(x, y, kw, 100); x += kw + 6;
+    slapThumpSlider.setBounds(x, y, kw, 100); x += kw + 6;
+    slapDecaySlider.setBounds(x, y, kw, 100);
 
-    moogCutoffSlider.setBounds(x, y, knobW, 90); x += knobW + 8;
-    moogResoSlider.setBounds(x, y, knobW, 90); x += knobW + 8;
-    moogAttackSlider.setBounds(x, y, knobW, 90); x += knobW + 8;
-    moogDecaySlider.setBounds(x, y, knobW, 90); x += knobW + 8;
-    moogSustainSlider.setBounds(x, y, knobW, 90); x += knobW + 8;
-    moogReleaseSlider.setBounds(x, y, knobW, 90);
-
-    y += 110; x = controls.getX() + 180;
-    kickTuneSlider.setBounds(x, y, knobW, 90); x += knobW + 8;
-    kickDecaySlider.setBounds(x, y, knobW, 90); x += knobW + 8;
-    snareSnapSlider.setBounds(x, y, knobW, 90); x += knobW + 20;
-
-    slapToneSlider.setBounds(x, y, knobW, 90); x += knobW + 8;
-    slapThumpSlider.setBounds(x, y, knobW, 90); x += knobW + 8;
-    slapDecaySlider.setBounds(x, y, knobW, 90);
+    area.removeFromTop(10);
+    piano.setBounds(area.removeFromBottom(90));
 }
 
 void TelephoneBeepAudioProcessorEditor::updateVisibility()
